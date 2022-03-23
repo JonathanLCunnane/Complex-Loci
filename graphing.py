@@ -25,6 +25,9 @@ class GraphingBrush:
         self.plt.minorticks_on()
         self.plt.grid(b=True, which="minor", axis="both", color=graph_line_colour, linestyle="-", linewidth=(self.thickness/8), alpha=0.4)
 
+        # Place the grid lines underneath the axis
+        self.axes.set_axisbelow(True)
+
     def circle(self, radius: float, center: tuple):
         """
         Radius - a float representing the radius of the circle you want to draw.
