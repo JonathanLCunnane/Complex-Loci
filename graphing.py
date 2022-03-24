@@ -1,3 +1,4 @@
+from matplotlib.axis import Axis
 import matplotlib.pyplot as pyplot
 
 
@@ -7,6 +8,42 @@ class GraphingBrush:
         self.figure, self.axes = plot.subplots()
         self.colour = line_colour
         self.thickness = line_thickness
+
+    def xlim_change(self, axis: Axis):
+        xlim = axis.get_xlim()
+        # if the axis is to the left of the screen
+        if xlim[0] > 0:
+            currspine = self.axes.spines[["right", "left"]]
+            currspine.set_position(("outward", 0))
+            currspine.set_color("lightgray")
+        # if the axis is to the right of the screen   
+        elif xlim[1] < 0:
+            currspine = self.axes.spines[["right", "left"]]
+            currspine.set_position(("outward", 0))
+            currspine.set_color("lightgray")
+        else:
+            currspine = self.axes.spines[["right", "left"]]
+            currspine.set_position("zero")
+            currspine.set_color("black")
+           
+
+
+    def ylim_change(self, axis: Axis):
+        ylim = axis.get_ylim()
+        # if the axis is to the left of the screen
+        if ylim[0] > 0:
+            currspine = self.axes.spines[["bottom", "top"]]
+            currspine.set_position(("outward", 0))
+            currspine.set_color("lightgray")
+        # if the axis is to the right of the screen   
+        elif ylim[1] < 0:
+            currspine = self.axes.spines[["bottom", "top"]]
+            currspine.set_position(("outward", 0))
+            currspine.set_color("lightgray")
+        else:
+            currspine = self.axes.spines[["bottom", "top"]]
+            currspine.set_position("zero")
+            currspine.set_color("black")
     
     def one_to_one_aspect(self):
         """
@@ -14,9 +51,10 @@ class GraphingBrush:
         """
         self.axes.set_aspect("equal")
 
-    def draw_graph_lines(self, graph_line_colour: str="cornflowerblue"):
+    def format_graph(self, graph_line_colour: str="cornflowerblue"):
         """
         Draws the major and minor grid lines. Defaults to a classic blue graph paper colour.
+        Also draws the axis with spines.
         """
         # Major grid lines first
         self.plt.grid(b=True, which="major", axis="both", color=graph_line_colour, linestyle="-", linewidth=(self.thickness/4), alpha=0.8)
@@ -27,6 +65,21 @@ class GraphingBrush:
 
         # Place the grid lines underneath the axis
         self.axes.set_axisbelow(True)
+
+        # Finally draws the x = 0 and y = 0 axis.
+
+        # Move axes to center
+        self.axes.spines["left"].set_position("zero")
+        self.axes.spines["bottom"].set_position("zero")
+
+        # Remove right and top axis
+        self.axes.spines["right"].set_color("none")
+        self.axes.spines["top"].set_color("none")
+
+        self.axes.callbacks.connect("xlim_changed", self.xlim_change)
+        self.axes.callbacks.connect("ylim_changed", self.ylim_change)
+        
+
 
     def circle(self, radius: float, center: tuple):
         """

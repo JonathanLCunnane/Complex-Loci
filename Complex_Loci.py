@@ -9,7 +9,7 @@ def main():
     default_brush = gbrush(plt)
     default_brush.one_to_one_aspect()
     default_brush.circle(radius, (x, y))
-    default_brush.draw_graph_lines()
+    default_brush.format_graph()
     plt.title("Complex Loci Plot")
     plt.show()
     
