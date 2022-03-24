@@ -14,12 +14,11 @@ def main():
 
     # Creating and using brush
     default_brush = gbrush(plt, figure, axes)
-    default_brush.one_to_one_aspect()
     default_brush.circle(radius, (x, y))
-    default_brush.format_graph()
     
     # Set title
     plt.title("Complex Loci Plot")
+    
     # Show plot
     plt.show()
     

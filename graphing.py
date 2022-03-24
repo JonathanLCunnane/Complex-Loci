@@ -19,20 +19,6 @@ class GraphingBrush:
         self.axes = axs
         self.colour = line_colour
         self.thickness = line_thickness
-    
-    def one_to_one_aspect(self):
-        """
-        Sets the aspect ratio to 1:1, or 'equal'.
-        """
-        self.axes.set_aspect("equal")
-
-    def format_graph(self):
-        """
-        Draws the major and minor grid lines. Defaults to a classic blue graph paper colour.
-        Also draws the axis with spines.
-        """
-        return
-        
 
 
     def circle(self, radius: float, center: tuple):
@@ -106,24 +92,32 @@ def ylim_change(axis: Axis):
     GraphingVariables.ylim_tick += 1
 
 
-def setup_figure(plot: pyplot, figure: figure, axes: axes):
+def setup_figure(plot: pyplot, figure: figure, axes: axes, graph_line_colour: str=GraphingVariables.graph_line_colour):
+    """
+        ### 1. Grid Lines
+        Draws the major and minor grid lines. Defaults to a classic blue graph paper colour.
+        Also draws the axis with spines.
+        ### 2. Aspect Ratio
+        Sets the aspect ratio to 1:1, or 'equal'.
+    """
     ### 1
     # Major grid lines first
-    plot.grid(b=True, which="major", axis="both", color=GraphingVariables.graph_line_colour, linestyle="-", linewidth=(GraphingVariables.graph_line_thickness/4), alpha=0.8)
+    plot.grid(b=True, which="major", axis="both", color=graph_line_colour, linestyle="-", linewidth=(GraphingVariables.graph_line_thickness/4), alpha=0.8)
 
     # Minor grid lines first
     plot.minorticks_on()
-    plot.grid(b=True, which="minor", axis="both", color=GraphingVariables.graph_line_colour, linestyle="-", linewidth=(GraphingVariables.graph_line_thickness/8), alpha=0.4)
+    plot.grid(b=True, which="minor", axis="both", color=graph_line_colour, linestyle="-", linewidth=(GraphingVariables.graph_line_thickness/8), alpha=0.4)
 
     # Place the grid lines underneath the axis
     axes.set_axisbelow(True)
 
-    # Finally draws and fixes the x = 0 and y = 0 axis.
+    # Fixes the x = 0 and y = 0 spines/axes.
 
     xlim_change(axes)
     ylim_change(axes)
 
-    # Fixing spines on scrolling
-
     axes.callbacks.connect("xlim_changed", xlim_change)
     axes.callbacks.connect("ylim_changed", ylim_change)
+
+    ### 2
+    axes.set_aspect("equal")    
