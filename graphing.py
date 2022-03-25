@@ -37,7 +37,7 @@ class GraphingBrush:
         self.axes.add_artist(circle)
 
 
-def xlim_change(axis: Axis):
+def __xlim_change(axis: Axis):
     if GraphingVariables.xlim_tick % GraphingVariables.ticks_per_axis_check == 0:
         GraphingVariables.xlim_tick = 0
         xlim = axis.get_xlim()
@@ -64,7 +64,7 @@ def xlim_change(axis: Axis):
             currspine.set_color("none")
     GraphingVariables.xlim_tick += 1
 
-def ylim_change(axis: Axis):
+def __ylim_change(axis: Axis):
     if GraphingVariables.ylim_tick % GraphingVariables.ticks_per_axis_check == 0:
         GraphingVariables.ylim_tick = 0
         ylim = axis.get_ylim()
@@ -113,11 +113,11 @@ def setup_figure(plot: pyplot, figure: figure, axes: axes, graph_line_colour: st
 
     # Fixes the x = 0 and y = 0 spines/axes.
 
-    xlim_change(axes)
-    ylim_change(axes)
+    __xlim_change(axes)
+    __ylim_change(axes)
 
-    axes.callbacks.connect("xlim_changed", xlim_change)
-    axes.callbacks.connect("ylim_changed", ylim_change)
+    axes.callbacks.connect("xlim_changed", __xlim_change)
+    axes.callbacks.connect("ylim_changed", __ylim_change)
 
     ### 2
     axes.set_aspect("equal")    
