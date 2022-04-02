@@ -1,6 +1,7 @@
 from matplotlib.axis import Axis
 import matplotlib.pyplot as pyplot
 from matplotlib import figure, axes
+from re import search
 
 
 class GraphingVariables:
@@ -13,7 +14,7 @@ class GraphingVariables:
 
 class GraphingBrush:
 
-    def __init__(self, plt: pyplot,fig: figure, axs: axes, line_colour: str="black", line_thickness: float=3):
+    def __init__(self, plt: pyplot, fig: figure, axs: axes, line_colour: str="black", line_thickness: float=3):
         self.plot = plt
         self.figure = fig
         self.axes = axs
@@ -21,7 +22,7 @@ class GraphingBrush:
         self.thickness = line_thickness
 
 
-    def circle(self, radius: float, center: tuple):
+    def circle(self, radius: float, center: tuple[float]):
         """
         Radius - a float representing the radius of the circle you want to draw.
         Center - a tuple representing the coordinates `(x, y)` of the center of the circle.
@@ -35,6 +36,43 @@ class GraphingBrush:
         self.axes.axis(limx + limy) # Same x and y limits as it is a circle.
 
         self.axes.add_artist(circle)
+
+    
+    def parse_and_draw_input(self, input: str) -> bool:
+        number_search = "([-+]?[0-9]*\.?[0-9]+)"
+        complex_search = "((?=[iIjJ.\d+-])([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?![iIjJ.\d]))?([+-]?(?:(?:\d+(?:\.\d*)?|\.\d+))?[iIjJ])?)"
+        circle_search = search(f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})$", input)
+        if circle_search:
+            center = [0, 0]
+            radius = 1
+            # check if the circle is in the form |* \pm z| or in the form |z \pm *|
+            print(circle_search.groups())
+            # if in the form |z \pm *|
+            if circle_search.group(2).startswith("z"):
+                if circle_search.group(11) != None: 
+                    center[0] = -float(circle_search.group(11))
+                if circle_search.group(12) != None:
+                    center[1] = -float(circle_search.group(12)[:-1])
+                radius = float(circle_search.group(13))
+            # if in the form |* \pm z|
+            else:
+                # if in the form |* p z|
+                if circle_search.group(2)[-2] == "-":
+                    coeff = 1
+                # if in the form |* m z|
+                else:
+                    coeff = -1
+                if circle_search.group(11) != None: 
+                    center[0] = coeff*float(circle_search.group(11))
+                if circle_search.group(12) != None:
+                    y = circle_search.group(12)[:-1]
+                    if y == "":
+                        center[1] = 1
+                    center[1] = coeff*float(circle_search.group(12)[:-1])
+                radius = float(circle_search.group(13))
+            self.circle(radius, tuple(center))
+            return True
+        return False
 
 
 def __xlim_change(axis: Axis):
@@ -63,6 +101,7 @@ def __xlim_change(axis: Axis):
             currspine = axis.spines["right"]
             currspine.set_color("none")
     GraphingVariables.xlim_tick += 1
+
 
 def __ylim_change(axis: Axis):
     if GraphingVariables.ylim_tick % GraphingVariables.ticks_per_axis_check == 0:

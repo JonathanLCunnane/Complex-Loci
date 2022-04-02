@@ -6,33 +6,6 @@ import tkinter as tk
 from graphing import GraphingBrush as gbrush, setup_figure
 
 
-def tokenise(inp: str, delimeters: dict) -> list:
-    """
-    Takes in anput string inp and a dict of delimeters.\n
-    An example is as follows.\n
-    inp = "|z-i^i|"\n
-    delimeters = {
-        "|": "ABS",
-        "z": "COMPLEX_VARIABLE",
-        "+": "ADD",
-        "-": "SUB",
-        "^": "POW",
-        "i": "IMAGINARY_UNIT"
-    }\n
-    Would return:\n
-    [
-        "ABS",
-        "COMPLEX_VARIABLE",
-        "SUB",
-        "IMAGINARY_UNIT",
-        "POW",
-        "IMAGINARY_UNIT"
-    ]
-    """
-    out = {}
-    for char in delimeters:
-        return
-
 
 class Window(tk.Tk):
     def __init__(self):
@@ -54,9 +27,8 @@ class Window(tk.Tk):
         self.figure, self.axes = plt.subplots()
         setup_figure(plt, self.figure, self.axes)
 
-        # Creating and using brush
-        default_brush = gbrush(plt, fig=self.figure, axs=self.axes, line_colour="green")
-        default_brush.circle(1, (1, 2))
+        # Creating default brush
+        self.default_brush = gbrush(plt, fig=self.figure, axs=self.axes, line_colour="green")
 
         # Set title
         plt.title("Complex Loci Plot")
@@ -104,45 +76,35 @@ class Window(tk.Tk):
     def matplotlib_setup(self):
         # Matplotlib canvas widget
         # Show plot on canvas
-        canvas = FigureCanvasTkAgg(self.figure, self)
-        canvas.get_tk_widget().pack(side="right")
+        self.canvas = FigureCanvasTkAgg(self.figure, self)
+        self.canvas.get_tk_widget().pack(side="right")
 
         # Matplotlib navigation toolbar
-        toolbar = NavigationToolbar2Tk(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side="top", fill="both", expand=True)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self)
+        self.toolbar.update()
+        self.canvas._tkcanvas.pack(side="top", fill="both", expand=True)
+
+
+    def update_matplotlib(self):
+        # Delete current canvas
+        self.toolbar.destroy()
+        self.canvas.get_tk_widget().destroy()
+
+        # Draw new canvas
+        self.matplotlib_setup()
 
 
     def on_entry_change(self, *args):
-        print(self.entrytext.get())
+        if self.default_brush.parse_and_draw_input(self.entrytext.get()):
+            self.update_matplotlib()
 
 
 
 def main():
     # Start tkinter window
     window = Window()
-    print("hi")
     window.mainloop()
-    print("hi")
     window.destroy()
-
-    # Temporary Inputs for testing purposes
-    radius = float(input("Enter circle radius: "))
-    x, y = [float(i) for i in input("Enter the center coordinates in the form 'x, y': ").split(",")]
-
-    # Setup figure
-    figure, axes = plt.subplots()
-    setup_figure(plt, figure, axes)
-
-    # Creating and using brush
-    default_brush = gbrush(plt, figure, axes)
-    default_brush.circle(radius, (x, y))
-
-    # Set title
-    plt.title("Complex Loci Plot")
-    
-    # Show plot
-    plt.show()
     
 
 if __name__ == "__main__":
