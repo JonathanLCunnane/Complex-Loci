@@ -1,7 +1,8 @@
 from matplotlib.axis import Axis
 import matplotlib.pyplot as pyplot
-from matplotlib import figure, axes
+from matplotlib import figure, axes, patches
 from re import search
+from time import sleep
 
 
 class GraphingVariables:
@@ -20,25 +21,36 @@ class GraphingBrush:
         self.axes = axs
         self.colour = line_colour
         self.thickness = line_thickness
+        
+        # Create {entry# : plotobj} dict for replacing the correct plot on entry edit.
+        self.plotsdict = {}
 
 
-    def circle(self, radius: float, center: tuple[float]):
+    def circle(self, radius: float, center: tuple[float], entrynum: int):
         """
         Radius - a float representing the radius of the circle you want to draw.
         Center - a tuple representing the coordinates `(x, y)` of the center of the circle.
         """
         # Create circle 
-        circle = self.plot.Circle(center, radius, fill=False, color=self.colour, lw=self.thickness)
+        circle = patches.Circle(center, radius, fill=False, color=self.colour, lw=self.thickness)
 
         # Change axes settings and add to axes
         limx = [center[0] - 2*radius, center[0] + 2*radius]
         limy = [center[1] - 2*radius, center[1] + 2*radius]
         self.axes.axis(limx + limy) # Same x and y limits as it is a circle.
 
-        self.axes.add_artist(circle)
+        self.axes.add_patch(circle)
+
+        # Add circle to plotsdict
+        self.plotsdict[entrynum] = circle
+
+
+    def draw_input(self, plottype: str, entry_num: int, **kwargs):
+        if plottype == "circle":
+            self.circle(kwargs["radius"], kwargs["center"], entry_num)
 
     
-    def parse_and_draw_input(self, input: str) -> bool:
+    def parse_input(self, input: str, entrynum: int) -> tuple[str, dict[str, float]]:
         number_search = "([-+]?[0-9]*\.?[0-9]+)"
         complex_search = "((?=[iIjJ.\d+-])([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?![iIjJ.\d]))?([+-]?(?:(?:\d+(?:\.\d*)?|\.\d+))?[iIjJ])?)"
         circle_search = search(f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})$", input)
@@ -70,9 +82,15 @@ class GraphingBrush:
                         center[1] = 1
                     center[1] = coeff*float(circle_search.group(12)[:-1])
                 radius = float(circle_search.group(13))
-            self.circle(radius, tuple(center))
-            return True
-        return False
+            return ("circle", {"radius": radius, "center": tuple(center)})
+        return None
+
+    
+    def remove_plot(self, entrynum: int):
+        if entrynum in self.plotsdict:
+            # if the plot is an 'circle' type
+            if isinstance(self.plotsdict[entrynum], patches.Circle):
+                self.plotsdict[entrynum].remove()
 
 
 def __xlim_change(axis: Axis):

@@ -39,6 +39,9 @@ class Window(tk.Tk):
         # Setup matplotlib plot
         self.matplotlib_setup()
 
+        # Create {entry# : brush} dict for replacing the correct plot on entry edit.
+        self.plotsdict = {1: self.default_brush}
+
 
     def _quit(self):
         self.quit()
@@ -77,7 +80,8 @@ class Window(tk.Tk):
         # Matplotlib canvas widget
         # Show plot on canvas
         self.canvas = FigureCanvasTkAgg(self.figure, self)
-        self.canvas.get_tk_widget().pack(side="right")
+        self.canvaswidget = self.canvas.get_tk_widget()
+        self.canvaswidget.pack(side="right")
 
         # Matplotlib navigation toolbar
         self.toolbar = NavigationToolbar2Tk(self.canvas, self)
@@ -88,14 +92,17 @@ class Window(tk.Tk):
     def update_matplotlib(self):
         # Delete current canvas
         self.toolbar.destroy()
-        self.canvas.get_tk_widget().destroy()
+        self.canvaswidget.destroy()
 
         # Draw new canvas
         self.matplotlib_setup()
 
 
     def on_entry_change(self, *args):
-        if self.default_brush.parse_and_draw_input(self.entrytext.get()):
+        inp = self.default_brush.parse_input(self.entrytext.get(), 1)
+        if inp:
+            self.plotsdict[1].remove_plot(1)
+            self.plotsdict[1].draw_input(inp[0], 1, **inp[1])
             self.update_matplotlib()
 
 
