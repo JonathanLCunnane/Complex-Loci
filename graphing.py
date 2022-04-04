@@ -2,7 +2,7 @@ from matplotlib.axis import Axis
 import matplotlib.pyplot as pyplot
 from matplotlib import figure, axes, patches
 from re import search
-from time import sleep
+from interpreting import circle_locus
 
 
 class GraphingVariables:
@@ -53,45 +53,9 @@ class GraphingBrush:
     def parse_input(self, input: str, entrynum: int) -> tuple[str, dict[str, float]]:
         number_search = "([-+]?[0-9]*\.?[0-9]+)"
         complex_search = "((?=[iIjJ.\d+-])([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?![iIjJ.\d]))?([+-]?(?:(?:\d+(?:\.\d*)?|\.\d+))?[iIjJ])?)"
-        circle_search = search(f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})$", input)
+        circle_search = search(f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})|(\|z\|={number_search})$", input)
         if circle_search:
-            center = [0, 0]
-            radius = 1
-            # check if the circle is in the form |* \pm z| or in the form |z \pm *|
-            print(circle_search.groups())
-            # if in the form |z \pm *|
-            if circle_search.group(2).startswith("z"):
-                if circle_search.group(11) != None: 
-                    center[0] = -float(circle_search.group(11))
-                if circle_search.group(12) != None:
-                    y = circle_search.group(12)[:-1]
-                    if y == "" or y == "+":
-                        center[1] = 1
-                    elif y == "-":
-                        center[1] = -1
-                    else:
-                        center[1] = float(y)
-                radius = float(circle_search.group(13))
-            # if in the form |* \pm z|
-            else:
-                # if in the form |* p z|
-                if circle_search.group(2)[-2] == "-":
-                    coeff = 1
-                # if in the form |* m z|
-                else:
-                    coeff = -1
-                if circle_search.group(5) != None: 
-                    center[0] = coeff*float(circle_search.group(5))
-                if circle_search.group(6) != None:
-                    y = circle_search.group(6)[:-1]
-                    if y == "" or y == "+":
-                        center[1] = coeff * 1
-                    elif y == "-":
-                        center[1] = coeff * -1
-                    else:
-                        center[1] = coeff*float(y)
-                radius = float(circle_search.group(13))
-            return ("circle", {"radius": radius, "center": tuple(center)})
+            return circle_locus(circle_search.groups())
         return None
 
     
@@ -99,9 +63,7 @@ class GraphingBrush:
         if entrynum in self.plotsdict:
             # if the plot is an 'circle' type
             if isinstance(self.plotsdict[entrynum], patches.Circle):
-                print(f"plots before: {self.plotsdict}", end="")
                 self.plotsdict[entrynum].remove()
-                print(f"plots after: {self.plotsdict}")
 
 
 def __xlim_change(axis: Axis):
