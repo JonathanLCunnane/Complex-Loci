@@ -64,7 +64,13 @@ class GraphingBrush:
                 if circle_search.group(11) != None: 
                     center[0] = -float(circle_search.group(11))
                 if circle_search.group(12) != None:
-                    center[1] = -float(circle_search.group(12)[:-1])
+                    y = circle_search.group(12)[:-1]
+                    if y == "" or y == "+":
+                        center[1] = 1
+                    elif y == "-":
+                        center[1] = -1
+                    else:
+                        center[1] = float(y)
                 radius = float(circle_search.group(13))
             # if in the form |* \pm z|
             else:
@@ -74,13 +80,16 @@ class GraphingBrush:
                 # if in the form |* m z|
                 else:
                     coeff = -1
-                if circle_search.group(11) != None: 
-                    center[0] = coeff*float(circle_search.group(11))
-                if circle_search.group(12) != None:
-                    y = circle_search.group(12)[:-1]
-                    if y == "":
-                        center[1] = 1
-                    center[1] = coeff*float(circle_search.group(12)[:-1])
+                if circle_search.group(5) != None: 
+                    center[0] = coeff*float(circle_search.group(5))
+                if circle_search.group(6) != None:
+                    y = circle_search.group(6)[:-1]
+                    if y == "" or y == "+":
+                        center[1] = coeff * 1
+                    elif y == "-":
+                        center[1] = coeff * -1
+                    else:
+                        center[1] = coeff*float(y)
                 radius = float(circle_search.group(13))
             return ("circle", {"radius": radius, "center": tuple(center)})
         return None
@@ -90,7 +99,9 @@ class GraphingBrush:
         if entrynum in self.plotsdict:
             # if the plot is an 'circle' type
             if isinstance(self.plotsdict[entrynum], patches.Circle):
+                print(f"plots before: {self.plotsdict}", end="")
                 self.plotsdict[entrynum].remove()
+                print(f"plots after: {self.plotsdict}")
 
 
 def __xlim_change(axis: Axis):
