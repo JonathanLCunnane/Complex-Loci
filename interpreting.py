@@ -2,7 +2,6 @@ def circle_locus(regexgroups: tuple[str]) -> tuple[str, dict[str, float]]:
     center = [0, 0]
     radius = 1
     # check if the circle is in the form |* \pm z| or in the form |z \pm *|
-    print(regexgroups)
     # firstly, if it is in the form |z| = num
     if regexgroups[13] != None:
         if regexgroups[13][:3] == "|z|":
@@ -52,6 +51,6 @@ def circle_locus(regexgroups: tuple[str]) -> tuple[str, dict[str, float]]:
                 center[1] = coeff*float(y)
         radius = float(regexgroups[12])
     # if radius is zero
-    if radius == 0:
+    if radius <= 0 or radius >= 1073741824 or center[0] >= 1073741824 or center[1] >= 1073741824 or center[0] <= -1073741824 or center[1] <= -1073741824:
         return None
     return ("circle", {"radius": radius, "center": tuple(center)})
