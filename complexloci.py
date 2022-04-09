@@ -99,10 +99,12 @@ class Window(tk.Tk):
 
     def on_entry_change(self, *args):
         inp = self.default_brush.parse_input(self.entrytext.get(), 1)
-        if inp:
-            self.plotsdict[1].remove_plot(1)
+        self.plotsdict[1].remove_plot(1)
+        if inp:   
             self.plotsdict[1].draw_input(inp[0], 1, **inp[1])
-            self.update_matplotlib()
+        else:
+            self.plotsdict[1].plotsdict[1] = None
+        self.update_matplotlib()
 
 
 
