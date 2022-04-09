@@ -53,9 +53,14 @@ class GraphingBrush:
     def parse_input(self, input: str, entrynum: int) -> tuple[str, dict[str, float]]:
         number_search = "([-+]?[0-9]*\.?[0-9]+)"
         complex_search = "((?=[iIjJ.\d+-])([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?![iIjJ.\d]))?([+-]?(?:(?:\d+(?:\.\d*)?|\.\d+))?[iIjJ])?)"
-        circle_search = search(f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})|(\|z\|={number_search})$", input)
-        if circle_search:
-            return circle_locus(circle_search.groups())
+        circle_search = f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})|(\|z\|={number_search})$"
+        circle_results = search(circle_search, input)
+        if circle_results:
+            return circle_locus(circle_results.groups())
+        perpendicular_bisector_search = f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search})|z)\|=\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search})|z)\|)$"
+        perpendicular_bisector_results = search(perpendicular_bisector_search, input)
+        if perpendicular_bisector_results:
+            print(perpendicular_bisector_results.groups())
         return None
 
     
