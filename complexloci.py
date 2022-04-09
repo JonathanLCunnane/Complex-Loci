@@ -90,12 +90,20 @@ class Window(tk.Tk):
 
 
     def update_matplotlib(self):
+        # Flush events at the start and the end to prevent any bugs
+        self.canvas.flush_events()
+
         # Delete current canvas
         self.toolbar.destroy()
         self.canvaswidget.destroy()
 
         # Draw new canvas
         self.matplotlib_setup()
+
+        self.toolbar.children.clear()
+        self.toolbar.unbind_all()
+        self.toolbar.destroy()
+        self.toolbar.quit()       
 
 
     def on_entry_change(self, *args):
