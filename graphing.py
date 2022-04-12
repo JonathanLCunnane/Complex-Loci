@@ -1,16 +1,18 @@
-from matplotlib.axis import Axis
+from matplotlib.axes import Axes
 import matplotlib.pyplot as pyplot
 from matplotlib import figure, axes, patches
-from re import search
+from re import match
 from interpreting import circle_locus
 
 
 class GraphingVariables:
-    ticks_per_axis_check = 1
+    ticks_per_axis_check = 5
     xlim_tick = 0
     ylim_tick = 0
     graph_line_colour = "cornflowerblue"
     graph_line_thickness = 3
+    prev_y_axis_pos = -2 # -1 means axis are to the left , 0 is in frame, 1 is to the right. (-2 is invalid but forces the program to check axis on the first call.)
+    prev_x_axis_pos = -2 # -1 means axis are to the bottom , 0 is in frame, 1 is to the top. (-2 is invalid but forces the program to check axis on the first call.)
 
 
 class GraphingBrush:
@@ -34,13 +36,6 @@ class GraphingBrush:
         # Create circle 
         circle = patches.Circle(center, radius, fill=False, color=self.colour, lw=self.thickness)
 
-        # Change axes settings and add to axes
-        limx = [center[0] - 2*radius, center[0] + 2*radius]
-        limy = [center[1] - 2*radius, center[1] + 2*radius]
-        self.axes.axis(limx + limy) # Same x and y limits as it is a circle.
-
-        self.axes.add_patch(circle)
-
         # Add circle to plotsdict
         self.plotsdict[entrynum] = circle
 
@@ -54,11 +49,11 @@ class GraphingBrush:
         number_search = "([-+]?[0-9]*\.?[0-9]+)"
         complex_search = "((?=[iIjJ.\d+-])([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?![iIjJ.\d]))?([+-]?(?:(?:\d+(?:\.\d*)?|\.\d+))?[iIjJ])?)"
         circle_search = f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})|(\|z\|={number_search})$"
-        circle_results = search(circle_search, input)
+        circle_results = match(circle_search, input)
         if circle_results:
             return circle_locus(circle_results.groups())
         perpendicular_bisector_search = f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search})|z)\|=\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search})|z)\|)$"
-        perpendicular_bisector_results = search(perpendicular_bisector_search, input)
+        perpendicular_bisector_results = match(perpendicular_bisector_search, input)
         if perpendicular_bisector_results:
             print(perpendicular_bisector_results.groups())
         return None
@@ -71,18 +66,23 @@ class GraphingBrush:
                 self.plotsdict[entrynum].remove()
 
 
-def __xlim_change(axis: Axis):
-    if GraphingVariables.xlim_tick % GraphingVariables.ticks_per_axis_check == 0:
-        GraphingVariables.xlim_tick = 0
-        xlim = axis.get_xlim()
+def __xlim_change(axis: Axes):
+    xlim = axis.get_xlim()
+    if xlim[0] > 0:
+        currtickpos = -1
+    elif xlim[1] < 0:
+        currtickpos = 1
+    else:
+        currtickpos = 0
+    if currtickpos != GraphingVariables.prev_y_axis_pos:
         # if the axis is to the left of the screen
-        if xlim[0] > 0:
+        if currtickpos == -1:
             axis.yaxis.tick_left()
             currspine = axis.spines["left"]
             currspine.set_position(("outward", 0))
             currspine.set_color("lightgray")
         # if the axis is to the right of the screen   
-        elif xlim[1] < 0:
+        elif currtickpos == 1:
             axis.yaxis.tick_right()
             currspine = axis.spines["right"]
             currspine.set_position(("outward", 0))
@@ -96,21 +96,26 @@ def __xlim_change(axis: Axis):
             currspine.set_color("black")
             currspine = axis.spines["right"]
             currspine.set_color("none")
-    GraphingVariables.xlim_tick += 1
+        GraphingVariables.prev_y_axis_pos = currtickpos
 
 
-def __ylim_change(axis: Axis):
-    if GraphingVariables.ylim_tick % GraphingVariables.ticks_per_axis_check == 0:
-        GraphingVariables.ylim_tick = 0
-        ylim = axis.get_ylim()
-        # if the axis is to the left of the screen
-        if ylim[0] > 0:
+def __ylim_change(axis: Axes):
+    ylim = axis.get_ylim()
+    if ylim[0] > 0:
+        currtickpos = -1
+    elif ylim[1] < 0:
+        currtickpos = 1
+    else:
+        currtickpos = 0
+    if currtickpos != GraphingVariables.prev_x_axis_pos:
+    # if the axis is to the bottom of the screen
+        if currtickpos == -1:
             axis.xaxis.tick_bottom()
             currspine = axis.spines["bottom"]
             currspine.set_position(("outward", 0))
             currspine.set_color("lightgray")
-        # if the axis is to the right of the screen   
-        elif ylim[1] < 0:
+        # if the axis is to the top of the screen   
+        elif currtickpos == 1:
             axis.xaxis.tick_top()
             currspine = axis.spines["top"]
             currspine.set_position(("outward", 0))
@@ -124,7 +129,7 @@ def __ylim_change(axis: Axis):
             currspine.set_color("black")
             currspine = axis.spines["top"]
             currspine.set_color("none")
-    GraphingVariables.ylim_tick += 1
+        GraphingVariables.prev_x_axis_pos = currtickpos
 
 
 def setup_figure(plot: pyplot, figure: figure, axes: axes, graph_line_colour: str=GraphingVariables.graph_line_colour):
@@ -134,6 +139,8 @@ def setup_figure(plot: pyplot, figure: figure, axes: axes, graph_line_colour: st
         Also draws the axis with spines.
         ### 2. Aspect Ratio
         Sets the aspect ratio to 1:1, or 'equal'.
+        ### 3. Initial Position
+        Sets the initial position of the graph at the origin and with a -10 to 10 view of the axes.
     """
     ### 1
     # Major grid lines first
@@ -155,4 +162,7 @@ def setup_figure(plot: pyplot, figure: figure, axes: axes, graph_line_colour: st
     axes.callbacks.connect("ylim_changed", __ylim_change)
 
     ### 2
-    axes.set_aspect("equal")    
+    axes.set_aspect("equal")
+
+    ### 3
+    plot.axis([-10, 10, -10, 10])
