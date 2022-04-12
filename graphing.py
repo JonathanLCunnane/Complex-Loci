@@ -36,6 +36,8 @@ class GraphingBrush:
         # Create circle 
         circle = patches.Circle(center, radius, fill=False, color=self.colour, lw=self.thickness)
 
+        self.axes.add_patch(circle)
+        
         # Add circle to plotsdict
         self.plotsdict[entrynum] = circle
 
