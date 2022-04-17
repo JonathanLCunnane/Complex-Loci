@@ -1,8 +1,11 @@
 from matplotlib.axes import Axes
+from matplotlib.lines import Line2D
 import matplotlib.pyplot as pyplot
 from matplotlib import figure, axes, patches
 from re import match
-from interpreting import circle_locus
+
+from numpy import isin
+from interpreting import *
 
 
 class GraphingVariables:
@@ -42,9 +45,29 @@ class GraphingBrush:
         self.plotsdict[entrynum] = circle
 
 
+    def perpendicular_bisector(self, point_a: tuple[float], point_b: tuple[float], entrynum: int):
+        """
+        Point A and Point B are the points inbetween which a perpendicular bisector will be drawn.
+        """
+        # find a point and a slope of the perp bisector
+        center = ((point_a[0] + point_b[0])/2, (point_a[1] + point_b[1])/2)
+
+        # if the line is vertical, draw a axvline, else draw a normal axline
+        if point_b[1] - point_a[1] == 0:
+            perpendicular_bisector = self.axes.axvline(x=center[0], color=self.colour, lw=self.thickness)
+        else:
+            m = (point_a[0] - point_b[0])/(point_b[1] - point_a[1])
+            perpendicular_bisector = self.axes.axline(xy1=center, slope=m, color=self.colour, lw=self.thickness)
+
+        # add to entries dict
+        self.plotsdict[entrynum] = perpendicular_bisector
+        
+
     def draw_input(self, plottype: str, entry_num: int, **kwargs):
         if plottype == "circle":
             self.circle(kwargs["radius"], kwargs["center"], entry_num)
+        elif plottype == "perpendicular_bisector":
+            self.perpendicular_bisector(kwargs["point_a"], kwargs["point_b"], entry_num)
 
     
     def parse_input(self, input: str, entrynum: int) -> tuple[str, dict[str, float]]:
@@ -57,14 +80,14 @@ class GraphingBrush:
         perpendicular_bisector_search = f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search})|z)\|=\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search})|z)\|)$"
         perpendicular_bisector_results = match(perpendicular_bisector_search, input)
         if perpendicular_bisector_results:
-            print(perpendicular_bisector_results.groups())
+            return perp_bisector_locus(perpendicular_bisector_results.groups())
         return None
 
     
     def remove_plot(self, entrynum: int):
         if entrynum in self.plotsdict:
-            # if the plot is an 'circle' type
-            if isinstance(self.plotsdict[entrynum], patches.Circle):
+            # if the plot is an 'circle' type or a 'line' type
+            if isinstance(self.plotsdict[entrynum], (patches.Circle, Line2D)):
                 self.plotsdict[entrynum].remove()
 
 
@@ -167,4 +190,4 @@ def setup_figure(plot: pyplot, figure: figure, axes: axes, graph_line_colour: st
     axes.set_aspect("equal")
 
     ### 3
-    plot.axis([-10, 10, -10, 10])
+    plot.axis([-8, 8, -8, 8])
