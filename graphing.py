@@ -3,8 +3,8 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as pyplot
 from matplotlib import figure, axes, patches
 from re import match
+from math import tan
 
-from numpy import isin
 from interpreting import *
 
 
@@ -61,6 +61,26 @@ class GraphingBrush:
 
         # add to entries dict
         self.plotsdict[entrynum] = perpendicular_bisector
+
+
+    def half_line(self, point: tuple[float], theta: float, entrynum: int):
+        """
+        Point is the point the half line will originate from, and theta is the angle of the half line from the positive horizontal.
+        """
+        # find the gradient of the point
+        m = tan(theta)
+        # if theta is exactly zero
+        if theta < 0:
+            coeff = -1
+        else:
+            coeff = 1
+
+        # draw the half line
+        half_line = self.plot.plot([point[0], point[0]+1073741824], [point[1], coeff*m*1073741824 + point[1]], color=self.colour, lw=self.thickness)
+
+        # add to entries dict
+        self.plotsdict[entrynum] = half_line
+            
         
 
     def draw_input(self, plottype: str, entry_num: int, **kwargs):
@@ -68,6 +88,8 @@ class GraphingBrush:
             self.circle(kwargs["radius"], kwargs["center"], entry_num)
         elif plottype == "perpendicular_bisector":
             self.perpendicular_bisector(kwargs["point_a"], kwargs["point_b"], entry_num)
+        elif plottype == "half_line":
+            self.half_line(kwargs["point"], kwargs["theta"], entry_num)
 
     
     def parse_input(self, input: str, entrynum: int) -> tuple[str, dict[str, float]]:
@@ -81,6 +103,10 @@ class GraphingBrush:
         perpendicular_bisector_results = match(perpendicular_bisector_search, input)
         if perpendicular_bisector_results:
             return perp_bisector_locus(perpendicular_bisector_results.groups())
+        half_line_search = f"^(arg\((({complex_search}(-|\+)z)|(z(-|\+){complex_search})|z)\)={number_search})$"
+        half_line_results = match(half_line_search, input)
+        if half_line_results:
+            return half_line_locus(half_line_results.groups())
         return None
 
     

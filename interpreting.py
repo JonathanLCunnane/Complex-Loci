@@ -1,3 +1,6 @@
+from math import pi
+
+
 def __parse_circle(params: tuple[str, dict[str, float]]):
     """
     A post intepretation parsing check, to check if the circle's parameters are valid.
@@ -12,6 +15,15 @@ def __parse_perp_bisector(params: tuple[str, dict[str, float]]):
     A post intepretation parsing check, to check if the perpendicular bisector's parameters are valid.
     """
     if params[1]["point_a"][0] >= 1073741824 or params[1]["point_a"][0] <= -1073741824 or params[1]["point_a"][1] >= 1073741824 or params[1]["point_a"][1] <= -1073741824 or params[1]["point_b"][0] >= 1073741824 or params[1]["point_b"][0] <= -1073741824 or params[1]["point_b"][1] >= 1073741824 or params[1]["point_b"][1] <= -1073741824:
+        return None
+    return params
+
+
+def __parse_half_line(params: tuple[str, dict[str, float]]):
+    """
+    A post intepretation parsing check, to check if the half line's parameters are valid.
+    """
+    if params[1]["point"][0] >= 1073741824 or params[1]["point"][0] <= -1073741824 or params[1]["point"][1] >= 1073741824 or params[1]["point"][1] <= -1073741824:
         return None
     return params
 
@@ -62,3 +74,19 @@ def perp_bisector_locus(regexgroups: tuple[str]) -> tuple[str, dict[str, float]]
     if a == b:
         return None
     return __parse_perp_bisector(("perpendicular_bisector", {"point_a": a, "point_b": b}))
+
+
+def half_line_locus(regexgroups: tuple[str]) -> tuple[str, dict[str, float]]:
+    # find the point where the half line originates from
+    point = __point_from_string(regexgroups[1])
+    # find the angle of the half line between -pi and pi
+    theta = float(regexgroups[12])
+    if theta < 0:
+        theta = -theta
+        coeff = -1
+    else:
+        coeff = 1
+    while theta >= 2*pi:
+        theta -= 2*pi
+    theta *= coeff
+    return __parse_half_line(("half_line", {"point": point, "theta": theta}))
