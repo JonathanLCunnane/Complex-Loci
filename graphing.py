@@ -42,7 +42,7 @@ class GraphingBrush:
         self.axes.add_patch(circle)
         
         # Add circle to plotsdict
-        self.plotsdict[entrynum] = circle
+        self.plotsdict[entrynum] = ("circle", circle)
 
 
     def perpendicular_bisector(self, point_a: tuple[float], point_b: tuple[float], entrynum: int):
@@ -60,7 +60,7 @@ class GraphingBrush:
             perpendicular_bisector = self.axes.axline(xy1=center, slope=m, color=self.colour, lw=self.thickness)
 
         # add to entries dict
-        self.plotsdict[entrynum] = perpendicular_bisector
+        self.plotsdict[entrynum] = ("perpendicular_bisector", perpendicular_bisector)
 
 
     def half_line(self, point: tuple[float], theta: float, entrynum: int):
@@ -69,17 +69,26 @@ class GraphingBrush:
         """
         # find the gradient of the point
         m = tan(theta)
-        # if theta is exactly zero
-        if theta < 0:
-            coeff = -1
+        # find x and y coeffs
+        if theta >= 0 and theta <= pi/2:
+            xcoeff = 1
+            ycoeff = 1
+        elif theta > pi/2 and theta <= pi:
+            xcoeff = -1
+            ycoeff = -1
+        elif theta < 0 and theta >= -pi/2:
+            xcoeff = 1
+            ycoeff = 1
         else:
-            coeff = 1
+            xcoeff = -1
+            ycoeff = -1
 
         # draw the half line
-        half_line = self.plot.plot([point[0], point[0]+1073741824], [point[1], coeff*m*1073741824 + point[1]], color=self.colour, lw=self.thickness)
+        dist = 1073741824
+        half_line = self.plot.plot([point[0], point[0]+(xcoeff*dist)], [point[1], point[1]+(ycoeff*m*dist)], color=self.colour, lw=self.thickness)
 
         # add to entries dict
-        self.plotsdict[entrynum] = half_line
+        self.plotsdict[entrynum] = ("half_line", half_line)
             
         
 
@@ -112,9 +121,17 @@ class GraphingBrush:
     
     def remove_plot(self, entrynum: int):
         if entrynum in self.plotsdict:
-            # if the plot is an 'circle' type or a 'line' type
-            if isinstance(self.plotsdict[entrynum], (patches.Circle, Line2D)):
-                self.plotsdict[entrynum].remove()
+            curr = self.plotsdict[entrynum]
+            # if None
+            if not curr:
+                return
+            type = curr[0]
+            # if the plot is an 'circle' type or a 'perpendicular_bisector' type
+            if type == "circle" or type == "perpendicular_bisector":
+                curr[1].remove()
+            elif type == "half_line":
+                half_line = curr[1].pop(0)
+                half_line.remove()
 
 
 def __xlim_change(axis: Axes):

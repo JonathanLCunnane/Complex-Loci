@@ -53,7 +53,6 @@ def __point_from_string(regexgroup: str) -> tuple[float, float]:
 
 
 def circle_locus(regexgroups: tuple[str]) -> tuple[str, dict[str, float]]:
-    print(regexgroups)
     center = __point_from_string(regexgroups[1])
     # if the circle is in the form |z| = 4
     if regexgroups[13]:
@@ -81,12 +80,9 @@ def half_line_locus(regexgroups: tuple[str]) -> tuple[str, dict[str, float]]:
     point = __point_from_string(regexgroups[1])
     # find the angle of the half line between -pi and pi
     theta = float(regexgroups[12])
-    if theta < 0:
-        theta = -theta
-        coeff = -1
-    else:
-        coeff = 1
-    while theta >= 2*pi:
-        theta -= 2*pi
-    theta *= coeff
+    while theta > pi or theta <= -pi:
+        if theta < 0:
+            theta += 2*pi
+        else:
+            theta -= 2*pi
     return __parse_half_line(("half_line", {"point": point, "theta": theta}))
