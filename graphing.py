@@ -4,6 +4,7 @@ import matplotlib.pyplot as pyplot
 from matplotlib import figure, axes, patches
 from re import match
 from math import tan
+from sys import float_info
 
 from interpreting import *
 
@@ -84,7 +85,7 @@ class GraphingBrush:
             ycoeff = -1
 
         # draw the half line
-        dist = 1073741824
+        dist = float_info.max/2**59
         half_line = self.plot.plot([point[0], point[0]+(xcoeff*dist)], [point[1], point[1]+(ycoeff*m*dist)], color=self.colour, lw=self.thickness)
 
         # add to entries dict

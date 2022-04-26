@@ -80,9 +80,7 @@ def half_line_locus(regexgroups: tuple[str]) -> tuple[str, dict[str, float]]:
     point = __point_from_string(regexgroups[1])
     # find the angle of the half line between -pi and pi
     theta = float(regexgroups[12])
-    while theta > pi or theta <= -pi:
-        if theta < 0:
-            theta += 2*pi
-        else:
-            theta -= 2*pi
+    theta += pi
+    theta %= 2*pi
+    theta -= pi
     return __parse_half_line(("half_line", {"point": point, "theta": theta}))
