@@ -42,6 +42,9 @@ class Window(tk.Tk):
         # Create {entry# : brush} dict for replacing the correct plot on entry edit.
         self.plotsdict = {1: self.default_brush}
 
+        # Set locus count to 1
+        self.locus_count = 1
+
 
     def _quit(self):
         self.quit()
@@ -49,30 +52,25 @@ class Window(tk.Tk):
 
     def widget_setup(self):
         padding = {"padx" : 10, "pady": 10}
-        frame_one_bg = "#dbdbdb"
-        frame_two_bg = ""
+        frame_bg = "#dbdbdb"
 
         # First frame
-        frame_one = tk.Frame(self, bg=frame_one_bg, bd=5)
+        frame_one = tk.Frame(self, bg=frame_bg, bd=5)
         frame_one.pack(side="left", fill="both")
-        title_one = tk.Label(frame_one, justify="center", text="Enter Loci Equations Below:", bg=frame_one_bg)
+        title_one = tk.Label(frame_one, justify="center", text="Enter Loci Equations Below:", bg=frame_bg)
         title_one.pack(side="top", **padding, fill="y")
         entry = tk.Entry(frame_one, justify="right", validate="all", textvariable=self.entrytext, width=20, font=50)
         entry.pack(side="top", **padding)
-        #submit_locus_button = tk.Button(frame_one, text="Draw Locus", anchor="center") This could be used if parsing the input each time is too time consuming
-        #submit_locus_button.grid(column=1, row=1, **padding)
-        new_entry_button = tk.Button(frame_one, text="New Locus", anchor="center")
+        new_entry_button = tk.Button(frame_one, text="New Locus", anchor="center", command=self.on_new_locus)
         new_entry_button.pack(side="top", **padding)
 
-        # Second frame for settings, to be implemented later.
-        """
-        frame_two = tk.Frame(self, bg="yellow", bd=5)
-        frame_two.grid(column=1, row=0 , **padding)
-        entry = tk.Entry(frame_two, justify="right", validate="all", textvariable=self.entrytext, width=20, font=50)
-        title_two = tk.Label(frame_two, justify="center", text="Set Loci Settings:", bg=frame_one_bg)
-        title_two.grid(column=0, row=0, **padding)
-        entry.grid(column=0, row=1, **padding, ipady=20)
-        """
+        # Second frame for configuring loci.
+        frame_two = tk.Frame(self, bg=frame_bg, bd=5)
+        frame_two.pack(side="left", fill="both")
+        title_two = tk.Label(frame_two, justify="center", text="Configure Loci:", bg=frame_bg)
+        title_two.pack(side="top", **padding, fill="y")
+        entry_delete = tk.Button(frame_two, justify="right", text="X")
+        entry_delete.pack(side="top", **padding)
 
         self.entrytext.trace_add("write", self.on_entry_change)
         
@@ -105,6 +103,10 @@ class Window(tk.Tk):
         else:
             self.plotsdict[1].plotsdict[1] = None
         self.update_matplotlib()
+
+    
+    def on_new_locus(self):
+        pass
 
 
 

@@ -17,6 +17,7 @@ class GraphingVariables:
     graph_line_thickness = 3
     prev_y_axis_pos = -2 # -1 means axis are to the left , 0 is in frame, 1 is to the right. (-2 is invalid but forces the program to check axis on the first call.)
     prev_x_axis_pos = -2 # -1 means axis are to the bottom , 0 is in frame, 1 is to the top. (-2 is invalid but forces the program to check axis on the first call.)
+    max_matplotlib_dist = float_info.max/2**59
 
 
 class GraphingBrush:
@@ -85,7 +86,7 @@ class GraphingBrush:
             ycoeff = -1
 
         # draw the half line
-        dist = float_info.max/2**59
+        dist = GraphingVariables.max_matplotlib_dist
         half_line = self.plot.plot([point[0], point[0]+(xcoeff*dist)], [point[1], point[1]+(ycoeff*m*dist)], color=self.colour, lw=self.thickness)
 
         # add to entries dict
