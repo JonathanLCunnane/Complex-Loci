@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import ttk
 from graphing import GraphingBrush as gbrush, setup_figure
+from graphing import GraphingVariables
 
 
 
@@ -82,7 +83,7 @@ class Window(tk.Tk):
         entry_delete.image = cross_img
         entry_delete.pack(side="left")
         
-        colour_select = ttk.OptionMenu(settings_frame, self.colour_select_vars[1], "Select a Colour", "green", "blue", "red")
+        colour_select = ttk.OptionMenu(settings_frame, self.colour_select_vars[1], "Select a Colour", *(GraphingVariables.emoji_colour_dict))
         colour_select.pack(side="left", **padding)
         self.colour_select_vars[1].set("Select locus colour:")
 
@@ -92,6 +93,7 @@ class Window(tk.Tk):
 
     def change_brush_colour(self, entrynum: int):
         self.plotsdict[entrynum].colour = self.colour_select_vars[entrynum].get()
+
         # call entry change to force update the plot
         self.on_entry_change(entrynum)
 

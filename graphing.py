@@ -18,6 +18,7 @@ class GraphingVariables:
     prev_y_axis_pos = -2 # -1 means axis are to the left , 0 is in frame, 1 is to the right. (-2 is invalid but forces the program to check axis on the first call.)
     prev_x_axis_pos = -2 # -1 means axis are to the bottom , 0 is in frame, 1 is to the top. (-2 is invalid but forces the program to check axis on the first call.)
     max_matplotlib_dist = float_info.max/2**59
+    emoji_colour_dict = ["red", "orange", "yellow", "green", "blue", "indigo", "violet", "black"]
 
 
 class GraphingBrush:
