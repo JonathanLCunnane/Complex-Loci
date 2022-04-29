@@ -4,6 +4,7 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib.pyplot as plt
 import tkinter as tk
+from tkinter import ttk
 from graphing import GraphingBrush as gbrush, setup_figure
 
 
@@ -63,9 +64,9 @@ class Window(tk.Tk):
         frame_one.pack(side="left", fill="both")
         title_one = tk.Label(frame_one, justify="center", text="Enter Loci Equations Below:", bg=frame_bg)
         title_one.pack(side="top", **padding, fill="y")
-        entry = tk.Entry(frame_one, justify="right", validate="all", textvariable=self.entry_vars[1], width=20, font=50)
+        entry = ttk.Entry(frame_one, justify="right", validate="all", textvariable=self.entry_vars[1], width=20, font=50)
         entry.pack(side="top", **padding)
-        new_entry_button = tk.Button(frame_one, text="New Locus", anchor="center", command=self.on_new_locus)
+        new_entry_button = ttk.Button(frame_one, text="New Locus", command=self.on_new_locus)
         new_entry_button.pack(side="top", **padding)
 
         # Second frame for configuring loci.
@@ -73,22 +74,23 @@ class Window(tk.Tk):
         self.frame_two.pack(side="left", fill="both")
         title_two = tk.Label(self.frame_two, justify="center", text="Configure Loci:", bg=frame_bg)
         title_two.pack(side="top", **padding, fill="y")
-        settings_frame = tk.Frame(self.frame_two, bg="green", bd=5)
-        settings_frame.pack(side="top", **padding)
+        settings_frame = tk.Frame(self.frame_two, bg="green", bd=5, width=200, height=50)
+        settings_frame.pack_propagate(False)
+        settings_frame.pack(side="top")
         cross_img = tk.PhotoImage(file=r"./cross.png")
-        entry_delete = tk.Button(settings_frame, image=cross_img)
+        entry_delete = ttk.Button(settings_frame, image=cross_img)
         entry_delete.image = cross_img
         entry_delete.pack(side="left")
         
-        colour_select = tk.OptionMenu(settings_frame, self.colour_select_vars[1], "green", "blue")
+        colour_select = ttk.OptionMenu(settings_frame, self.colour_select_vars[1], "Select a Colour", "green", "blue", "red")
         colour_select.pack(side="left", **padding)
         self.colour_select_vars[1].set("Select locus colour:")
 
-        self.colour_select_vars[1].trace_add("write", lambda *args, entrynum=1: self.change_brush_colour(entrynum, *args))
-        self.entry_vars[1].trace_add("write", lambda *args, entrynum=1: self.on_entry_change(entrynum, *args))
+        self.colour_select_vars[1].trace_add("write", lambda *args: self.change_brush_colour(1))
+        self.entry_vars[1].trace_add("write", lambda *args: self.on_entry_change(1))
         
 
-    def change_brush_colour(self, entrynum: int, *args):
+    def change_brush_colour(self, entrynum: int):
         self.plotsdict[entrynum].colour = self.colour_select_vars[entrynum].get()
         # call entry change to force update the plot
         self.on_entry_change(entrynum)
@@ -115,7 +117,7 @@ class Window(tk.Tk):
         self.canvas.draw_idle() 
 
 
-    def on_entry_change(self, entrynum: int, *args):
+    def on_entry_change(self, entrynum: int):
         inp = self.default_brush.parse_input(self.entry_vars[entrynum].get(), entrynum)
         self.plotsdict[entrynum].remove_plot(entrynum)
         if inp:   
