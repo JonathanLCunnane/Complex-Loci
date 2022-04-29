@@ -1,4 +1,5 @@
 import matplotlib
+from pyparsing import col
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib.pyplot as plt
@@ -20,7 +21,10 @@ class Window(tk.Tk):
         self.resizable(False, False)
 
         # Setup tkinter vars
-        self.entrytext = tk.StringVar()
+        entry_text = tk.StringVar()
+        self.entry_vars = {1: entry_text}
+        colour_select_text = tk.StringVar()
+        self.colour_select_vars = {1: colour_select_text}
 
         # Matplot lib setup
         # Setup figure
@@ -59,21 +63,37 @@ class Window(tk.Tk):
         frame_one.pack(side="left", fill="both")
         title_one = tk.Label(frame_one, justify="center", text="Enter Loci Equations Below:", bg=frame_bg)
         title_one.pack(side="top", **padding, fill="y")
-        entry = tk.Entry(frame_one, justify="right", validate="all", textvariable=self.entrytext, width=20, font=50)
+        entry = tk.Entry(frame_one, justify="right", validate="all", textvariable=self.entry_vars[1], width=20, font=50)
         entry.pack(side="top", **padding)
         new_entry_button = tk.Button(frame_one, text="New Locus", anchor="center", command=self.on_new_locus)
         new_entry_button.pack(side="top", **padding)
 
         # Second frame for configuring loci.
-        frame_two = tk.Frame(self, bg=frame_bg, bd=5)
-        frame_two.pack(side="left", fill="both")
-        title_two = tk.Label(frame_two, justify="center", text="Configure Loci:", bg=frame_bg)
+        self.frame_two = tk.Frame(self, bg=frame_bg, bd=5)
+        self.frame_two.pack(side="left", fill="both")
+        title_two = tk.Label(self.frame_two, justify="center", text="Configure Loci:", bg=frame_bg)
         title_two.pack(side="top", **padding, fill="y")
-        entry_delete = tk.Button(frame_two, justify="right", text="X")
-        entry_delete.pack(side="top", **padding)
-
-        self.entrytext.trace_add("write", self.on_entry_change)
+        settings_frame = tk.Frame(self.frame_two, bg="green", bd=5)
+        settings_frame.pack(side="top", **padding)
+        cross_img = tk.PhotoImage(file=r"./cross.png")
+        entry_delete = tk.Button(settings_frame, image=cross_img)
+        entry_delete.image = cross_img
+        entry_delete.pack(side="left")
         
+        colour_select = tk.OptionMenu(settings_frame, self.colour_select_vars[1], "green", "blue")
+        colour_select.pack(side="left", **padding)
+        self.colour_select_vars[1].set("Select locus colour:")
+
+        self.colour_select_vars[1].trace_add("write", lambda *args, entrynum=1: self.change_brush_colour(entrynum, *args))
+        self.entry_vars[1].trace_add("write", lambda *args, entrynum=1: self.on_entry_change(entrynum, *args))
+        
+
+    def change_brush_colour(self, entrynum: int, *args):
+        self.plotsdict[entrynum].colour = self.colour_select_vars[entrynum].get()
+        # call entry change to force update the plot
+        self.on_entry_change(entrynum)
+
+
     def matplotlib_setup(self):
         # Matplotlib canvas widget
         # Show plot on canvas
@@ -95,13 +115,13 @@ class Window(tk.Tk):
         self.canvas.draw_idle() 
 
 
-    def on_entry_change(self, *args):
-        inp = self.default_brush.parse_input(self.entrytext.get(), 1)
-        self.plotsdict[1].remove_plot(1)
+    def on_entry_change(self, entrynum: int, *args):
+        inp = self.default_brush.parse_input(self.entry_vars[entrynum].get(), entrynum)
+        self.plotsdict[entrynum].remove_plot(entrynum)
         if inp:   
-            self.plotsdict[1].draw_input(inp[0], 1, **inp[1])
+            self.plotsdict[entrynum].draw_input(inp[0], entrynum, **inp[1])
         else:
-            self.plotsdict[1].plotsdict[1] = None
+            self.plotsdict[entrynum].plotsdict[entrynum] = None
         self.update_matplotlib()
 
     
