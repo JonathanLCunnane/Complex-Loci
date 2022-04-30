@@ -27,6 +27,9 @@ class Window(tk.Tk):
         self.entry_vars = {1: entry_text}
         colour_select_text = tk.StringVar()
         self.colour_select_vars = {1: colour_select_text}
+        self.padding = {"padx" : 10, "pady": 10}
+        self.entry_padding = {"padx": 10, "pady": 18}
+        self.frame_bg = "#dbdbdb"
 
         # Matplot lib setup
         # Setup figure
@@ -57,25 +60,23 @@ class Window(tk.Tk):
 
 
     def widget_setup(self):
-        padding = {"padx" : 10, "pady": 10}
-        frame_bg = "#dbdbdb"
 
         # First frame
-        frame_one = tk.Frame(self, bg=frame_bg, bd=5)
-        frame_one.pack(side="left", fill="both")
-        title_one = tk.Label(frame_one, justify="center", text="Enter Loci Equations Below:", bg=frame_bg)
-        title_one.pack(side="top", **padding, fill="y")
-        entry = ttk.Entry(frame_one, justify="right", validate="all", textvariable=self.entry_vars[1], width=20, font=50)
-        entry.pack(side="top", **padding)
-        new_entry_button = ttk.Button(frame_one, text="New Locus", command=self.on_new_locus)
-        new_entry_button.pack(side="top", **padding)
+        self.entry_frame = tk.Frame(self, bg=self.frame_bg, bd=5)
+        self.entry_frame.pack(side="left", fill="both")
+        title_one = tk.Label(self.entry_frame, justify="center", text="Enter Loci Equations Below:", bg=self.frame_bg)
+        title_one.pack(side="top", **self.padding, fill="y")
+        entry = ttk.Entry(self.entry_frame, justify="right", validate="all", textvariable=self.entry_vars[1], font=1)
+        entry.pack(side="top", **self.entry_padding)
+        self.new_entry_button = ttk.Button(self.entry_frame, text="New Locus", command=self.on_new_locus)
+        self.new_entry_button.pack(side="top", **self.padding)
 
         # Second frame for configuring loci.
-        self.frame_two = tk.Frame(self, bg=frame_bg, bd=5)
+        self.frame_two = tk.Frame(self, bg=self.frame_bg, bd=5)
         self.frame_two.pack(side="left", fill="both")
-        title_two = tk.Label(self.frame_two, justify="center", text="Configure Loci:", bg=frame_bg)
-        title_two.pack(side="top", **padding, fill="y")
-        settings_frame = tk.Frame(self.frame_two, bg="green", bd=5, width=200, height=50)
+        title_two = tk.Label(self.frame_two, justify="center", text="Configure Loci:", bg=self.frame_bg)
+        title_two.pack(side="top", **self.padding, fill="y")
+        settings_frame = tk.Frame(self.frame_two, bg=self.frame_bg, bd=5, width=200, height=60)
         settings_frame.pack_propagate(False)
         settings_frame.pack(side="top")
         cross_img = tk.PhotoImage(file=r"./cross.png")
@@ -84,12 +85,51 @@ class Window(tk.Tk):
         entry_delete.pack(side="left")
         
         colour_select = ttk.OptionMenu(settings_frame, self.colour_select_vars[1], "Select a Colour", *(GraphingVariables.emoji_colour_dict))
-        colour_select.pack(side="left", **padding)
+        colour_select.pack(side="left", **self.padding)
         self.colour_select_vars[1].set("Select locus colour:")
 
         self.colour_select_vars[1].trace_add("write", lambda *args: self.change_brush_colour(1))
         self.entry_vars[1].trace_add("write", lambda *args: self.on_entry_change(1))
         
+
+    def on_new_locus(self):
+        # Check which is the lowest locus number which can be created
+        entry_num = max(self.plotsdict.keys()) + 1
+
+        # Add new entry to entry_vars and new colour select to colour_select_vars
+        entry_text = tk.StringVar()
+        self.entry_vars[entry_num] = entry_text
+        colour_select_text = tk.StringVar()
+        self.colour_select_vars[entry_num] = colour_select_text
+        self.plotsdict[entry_num] = gbrush(plt, self.figure, self.axes)
+
+        # Frame for configuring loci.
+        settings_frame = tk.Frame(self.frame_two, bg=self.frame_bg, bd=5, width=200, height=60)
+        settings_frame.pack_propagate(False)
+        settings_frame.pack(side="top")
+        cross_img = tk.PhotoImage(file=r"./cross.png")
+        entry_delete = ttk.Button(settings_frame, image=cross_img)
+        entry_delete.image = cross_img
+        entry_delete.pack(side="left")
+        
+        colour_select = ttk.OptionMenu(settings_frame, self.colour_select_vars[entry_num], "Select a Colour", *(GraphingVariables.emoji_colour_dict))
+        colour_select.pack(side="left", **self.padding)
+        self.colour_select_vars[entry_num].set("Select locus colour:")
+
+        self.colour_select_vars[entry_num].trace_add("write", lambda *args: self.change_brush_colour(entry_num))
+        self.entry_vars[entry_num].trace_add("write", lambda *args: self.on_entry_change(entry_num))
+
+        # Remove new entry button, add another entry field, and then add the new entry button back
+        self.new_entry_button.destroy()
+        entry = ttk.Entry(self.entry_frame, justify="right", validate="all", textvariable=self.entry_vars[entry_num], width=20, font=50)
+        entry.pack(side="top", **self.entry_padding)
+        self.new_entry_button = ttk.Button(self.entry_frame, text="New Locus", command=self.on_new_locus)
+        self.new_entry_button.pack(side="top", **self.padding)
+
+        # Disable button if no more loci can be created
+        if len(self.plotsdict.keys()) >= 5:
+            self.new_entry_button.configure(state="disabled")
+
 
     def change_brush_colour(self, entrynum: int):
         self.plotsdict[entrynum].colour = self.colour_select_vars[entrynum].get()
@@ -127,11 +167,6 @@ class Window(tk.Tk):
         else:
             self.plotsdict[entrynum].plotsdict[entrynum] = None
         self.update_matplotlib()
-
-    
-    def on_new_locus(self):
-        pass
-
 
 
 def main():
