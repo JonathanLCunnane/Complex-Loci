@@ -34,7 +34,7 @@ class GraphingBrush:
         self.plotsdict = {}
 
 
-    def circle(self, radius: float, center: tuple[float], entrynum: int):
+    def circle(self, radius: float, center: tuple[float], entry_num: int):
         """
         Radius - a float representing the radius of the circle you want to draw.
         Center - a tuple representing the coordinates `(x, y)` of the center of the circle.
@@ -45,10 +45,10 @@ class GraphingBrush:
         self.axes.add_patch(circle)
         
         # Add circle to plotsdict
-        self.plotsdict[entrynum] = ("circle", circle)
+        self.plotsdict[entry_num] = ("circle", circle)
 
 
-    def perpendicular_bisector(self, point_a: tuple[float], point_b: tuple[float], entrynum: int):
+    def perpendicular_bisector(self, point_a: tuple[float], point_b: tuple[float], entry_num: int):
         """
         Point A and Point B are the points inbetween which a perpendicular bisector will be drawn.
         """
@@ -63,10 +63,10 @@ class GraphingBrush:
             perpendicular_bisector = self.axes.axline(xy1=center, slope=m, color=self.colour, lw=self.thickness)
 
         # add to entries dict
-        self.plotsdict[entrynum] = ("perpendicular_bisector", perpendicular_bisector)
+        self.plotsdict[entry_num] = ("perpendicular_bisector", perpendicular_bisector)
 
 
-    def half_line(self, point: tuple[float], theta: float, entrynum: int):
+    def half_line(self, point: tuple[float], theta: float, entry_num: int):
         """
         Point is the point the half line will originate from, and theta is the angle of the half line from the positive horizontal.
         """
@@ -91,7 +91,7 @@ class GraphingBrush:
         half_line = self.plot.plot([point[0], point[0]+(xcoeff*dist)], [point[1], point[1]+(ycoeff*m*dist)], color=self.colour, lw=self.thickness)
 
         # add to entries dict
-        self.plotsdict[entrynum] = ("half_line", half_line)
+        self.plotsdict[entry_num] = ("half_line", half_line)
             
         
 
@@ -104,7 +104,7 @@ class GraphingBrush:
             self.half_line(kwargs["point"], kwargs["theta"], entry_num)
 
     
-    def parse_input(self, input: str, entrynum: int) -> tuple[str, dict[str, float]]:
+    def parse_input(self, input: str) -> tuple[str, dict[str, float]]:
         number_search = "([-+]?[0-9]*\.?[0-9]+)"
         complex_search = "((?=[iIjJ.\d+-])([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?![iIjJ.\d]))?([+-]?(?:(?:\d+(?:\.\d*)?|\.\d+))?[iIjJ])?)"
         circle_search = f"^(\|(({complex_search}(-|\+)z)|(z(-|\+){complex_search}))\|={number_search})|(\|z\|={number_search})$"
@@ -122,9 +122,9 @@ class GraphingBrush:
         return None
 
     
-    def remove_plot(self, entrynum: int):
-        if entrynum in self.plotsdict:
-            curr = self.plotsdict[entrynum]
+    def remove_plot(self, entry_num: int):
+        if entry_num in self.plotsdict:
+            curr = self.plotsdict[entry_num]
             # if None
             if not curr:
                 return

@@ -42,17 +42,17 @@ class Window(tk.Tk):
         # Set title
         plt.title("Complex Loci Plot")
 
+        # Create {entry# : brush} dict for replacing the correct plot on entry edit.
+        self.plotsdict = {1: self.default_brush}
+
+        # Initialise {entry#: [settings frame, entry]} array
+        self.entry_components = {}
+
         # Setup widgets
         self.widget_setup()
 
         # Setup matplotlib plot
         self.matplotlib_setup()
-
-        # Create {entry# : brush} dict for replacing the correct plot on entry edit.
-        self.plotsdict = {1: self.default_brush}
-
-        # Set locus count to 1
-        self.locus_count = 1
 
 
     def _quit(self):
@@ -80,7 +80,7 @@ class Window(tk.Tk):
         settings_frame.pack_propagate(False)
         settings_frame.pack(side="top")
         cross_img = tk.PhotoImage(file=r"./cross.png")
-        entry_delete = ttk.Button(settings_frame, image=cross_img)
+        entry_delete = ttk.Button(settings_frame, image=cross_img, command=lambda *args: self.on_delete_locus(1))
         entry_delete.image = cross_img
         entry_delete.pack(side="left")
         
@@ -90,7 +90,12 @@ class Window(tk.Tk):
 
         self.colour_select_vars[1].trace_add("write", lambda *args: self.change_brush_colour(1))
         self.entry_vars[1].trace_add("write", lambda *args: self.on_entry_change(1))
+
+        # add to the entry_components dict
+        self.entry_components[1] = [settings_frame, entry]
         
+
+
 
     def on_new_locus(self):
         # Check which is the lowest locus number which can be created
@@ -108,7 +113,7 @@ class Window(tk.Tk):
         settings_frame.pack_propagate(False)
         settings_frame.pack(side="top")
         cross_img = tk.PhotoImage(file=r"./cross.png")
-        entry_delete = ttk.Button(settings_frame, image=cross_img)
+        entry_delete = ttk.Button(settings_frame, image=cross_img, command=lambda *args: self.on_delete_locus(entry_num))
         entry_delete.image = cross_img
         entry_delete.pack(side="left")
         
@@ -126,16 +131,51 @@ class Window(tk.Tk):
         self.new_entry_button = ttk.Button(self.entry_frame, text="New Locus", command=self.on_new_locus)
         self.new_entry_button.pack(side="top", **self.padding)
 
+        # add to entry_components dict
+        self.entry_components[entry_num] = [settings_frame, entry]
+
         # Disable button if no more loci can be created
-        if len(self.plotsdict.keys()) >= 5:
+        if len(self.plotsdict.keys()) == 5:
             self.new_entry_button.configure(state="disabled")
 
 
-    def change_brush_colour(self, entrynum: int):
-        self.plotsdict[entrynum].colour = self.colour_select_vars[entrynum].get()
+    def on_delete_locus(self, entry_num):
+        # do nothing if there is one (or less) loci
+        if len(self.entry_vars) <= 1:
+            return
+        # if there are 5 loci currently then enable the new locus button
+        if len(self.entry_vars) == 5:
+            self.new_entry_button.configure(state="enabled")
+
+        # otherwise delete locus
+        for comp in self.entry_components[entry_num]:
+            comp.destroy()
+
+        # force an on_entry_change with an empty value to remove the currently plotted locus.
+        self.plotsdict[entry_num].remove_plot(entry_num)
+        self.update_matplotlib()
+
+        # remove all other locus variables for this entry number
+        self.entry_vars.pop(entry_num)
+        self.colour_select_vars.pop(entry_num)
+        self.plotsdict.pop(entry_num)
+        self.entry_components.pop(entry_num)
+
+
+    def on_entry_change(self, entry_num: int):
+        inp = self.default_brush.parse_input(self.entry_vars[entry_num].get())
+        self.plotsdict[entry_num].remove_plot(entry_num)
+        if inp:   
+            self.plotsdict[entry_num].draw_input(inp[0], entry_num, **inp[1])
+        else:
+            self.plotsdict[entry_num].plotsdict[entry_num] = None
+        self.update_matplotlib()
+
+    def change_brush_colour(self, entry_num: int):
+        self.plotsdict[entry_num].colour = self.colour_select_vars[entry_num].get()
 
         # call entry change to force update the plot
-        self.on_entry_change(entrynum)
+        self.on_entry_change(entry_num)
 
 
     def matplotlib_setup(self):
@@ -159,15 +199,7 @@ class Window(tk.Tk):
         self.canvas.draw_idle() 
 
 
-    def on_entry_change(self, entrynum: int):
-        inp = self.default_brush.parse_input(self.entry_vars[entrynum].get(), entrynum)
-        self.plotsdict[entrynum].remove_plot(entrynum)
-        if inp:   
-            self.plotsdict[entrynum].draw_input(inp[0], entrynum, **inp[1])
-        else:
-            self.plotsdict[entrynum].plotsdict[entrynum] = None
-        self.update_matplotlib()
-
+    
 
 def main():
     # Start tkinter window
